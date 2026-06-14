@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>惊雷行动 · 思维免疫防线</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap');
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  :root {
+    --bg-dark: #0a0a0a;
+    --bg-panel: #1a1a1a;
+    --bg-card: #2a2a2a;
+    --border-color: #444;
+    --accent-orange: #F5A623;
+    --accent-gold: #D4AF37;
+    --accent-red: #DC2626;
+    --accent-red-deep: #C83030;
+    --accent-teal: #50C8B4;
+    --text-primary: #E8E8E8;
+    --text-secondary: #888;
+    --text-white: #FFF;
+    --card-bg: #f5f0e6;
+    --warning-bg: #f5e6e0;
+    --warning-border: #e74c3c;
+  }
+
+  body {
+    font-family: 'Noto Sans SC', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* ===== Matrix Rain Background ===== */
+  #matrix-bg {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    z-index: 0; pointer-events: none; opacity: 0.08;
+  }
+
+  /* ===== Intro Matrix Text Background ===== */
+  #intro-matrix-bg {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    z-index: 0; pointer-events: none;
+    overflow: hidden;
+    background: #0a0a0a;
+  }
+  #intro-matrix-bg .matrix-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 4px;
+    font-family: 'Courier New', 'Consolas', monospace;
+    font-size: 18px;
+    font-weight: 400;
+    color: #777;
+    line-height: 1.8;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  #intro-matrix-bg .matrix-row span {
+    display: inline-block;
+    opacity: 0;
+    animation: typeIn 0.05s ease forwards;
+  }
+  @keyframes typeIn {
+    from { opacity: 0; }
+    to { opacity: 0.65; }
+  }
+
+  /* ===== Page Container ===== */
+  .page {
+    display: none;
+    flex-direction: column;
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 16px 80px;
+  }
+  .page.active { display: flex; }
+
+  /* ===== Intro Page ===== */
+  .intro-page {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding-top: 0;
+  }
+  .intro-title {
+    font-size: 42px;
+    font-weight: 900;
+    color: var(--accent-gold);
+    text-shadow: 0 0 30px rgba(212,175,55,0.4), 0 0 60px rgba(212,175,55,0.2);
+    letter-spacing: 8px;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+  .intro-subtitle {
+    font-size: 18px;
+    color: var(--accent-gold);
+    opacity: 0.8;
+    letter-spacing: 4px;
+    margin-bottom: 60px;
+  }
+  .start-btn-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .start-btn {
+    width: 160px; height: 160px;
+    background: linear-gradient(135deg, #e63946, #c83030);
+    border: none;
+    border-radius: 20px;
+    color: var(--text-white);
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 6px;
+    cursor: pointer;
+    box-shadow: 0 8px 32px rgba(220,38,38,0.4), inset 0 2px 4px rgba(255,255,255,0.2);
+    transition: transform 0.15s, box-shadow 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .start-btn::after {
+    content: '';
+    position: absolute;
+    top: 10%; left: 10%; width: 80%; height: 30%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.25), transparent);
+    border-radius: 50%;
+  }
+  .start-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 4px 16px rgba(220,38,38,0.5);
+  }
+  .start-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    letter-spacing: 2px;
+  }
+  .start-sub {
+    font-size: 12px;
+    color: var(--accent-red);
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+  }
+
+  /* ===== Header ===== */
+  .game-header {
+    padding: 16px 0 12px;
+    text-align: center;
+  }
+  .game-title {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--accent-gold);
+    text-shadow: 0 0 15px rgba(212,175,55,0.3);
+    letter-spacing: 4px;
+  }
+
+  /* ===== Status Bar ===== */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+  }
+  .status-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+  .status-bar-track {
+    flex: 1;
+    height: 14px;
+    background: #111;
+    border-radius: 7px;
+    overflow: hidden;
+    position: relative;
+  }
+  .status-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-orange), #FFD700);
+    border-radius: 7px;
+    transition: width 0.6s ease;
+    position: relative;
+  }
+  .status-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 8px,
+      rgba(0,0,0,0.15) 8px,
+      rgba(0,0,0,0.15) 10px
+    );
+  }
+  .status-value {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--accent-orange);
+    min-width: 48px;
+    text-align: right;
+  }
+
+  /* ===== Progress Indicator ===== */
+  .progress-indicator {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+  }
+
+  /* ===== Question Panel ===== */
+  .question-panel {
+    background: var(--bg-panel);
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .question-panel::before,
+  .question-panel::after {
+    content: '';
+    position: absolute;
+    width: 16px; height: 16px;
+    border-color: var(--accent-orange);
+    border-style: solid;
+  }
+  .question-panel::before {
+    top: -1px; left: -1px;
+    border-width: 3px 0 0 3px;
+    border-radius: 16px 0 0 0;
+  }
+  .question-panel::after {
+    top: -1px; right: -1px;
+    border-width: 3px 3px 0 0;
+    border-radius: 0 16px 0 0;
+  }
+  .panel-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .panel-dot {
+    width: 6px; height: 6px;
+    background: var(--accent-orange);
+    border-radius: 50%;
+  }
+  .question-image {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    border: 1px solid #333;
+  }
+  .question-text {
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--text-primary);
+  }
+  .question-text .redline {
+    color: #ff4444;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-color: #ff4444;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 2px;
+  }
+
+  /* ===== Decision Buttons ===== */
+  .decision-area {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .decision-area::before,
+  .decision-area::after {
+    content: '';
+    position: absolute;
+    width: 16px; height: 16px;
+    border-color: var(--accent-orange);
+    border-style: solid;
+  }
+  .decision-area::before {
+    bottom: -1px; left: -1px;
+    border-width: 0 0 3px 3px;
+    border-radius: 0 0 0 16px;
+  }
+  .decision-area::after {
+    bottom: -1px; right: -1px;
+    border-width: 0 3px 3px 0;
+    border-radius: 0 0 16px 0;
+  }
+  .decision-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 20px;
+    background: var(--bg-panel);
+    border: 2px solid var(--border-color);
+    border-radius: 14px;
+    color: var(--text-primary);
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .decision-btn .indicator {
+    width: 14px; height: 14px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .decision-btn.believe .indicator { background: var(--accent-teal); }
+  .decision-btn.doubt .indicator { background: var(--accent-red); }
+  .decision-btn:active {
+    transform: scale(0.98);
+    border-color: var(--accent-orange);
+  }
+  .decision-btn .btn-icon {
+    font-size: 18px;
+    margin-left: auto;
+    opacity: 0.5;
+  }
+
+  /* ===== Slash Card Page ===== */
+  .slash-title {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--accent-gold);
+    text-align: center;
+    margin-bottom: 8px;
+    text-shadow: 0 0 15px rgba(212,175,55,0.3);
+  }
+  .slash-subtitle {
+    text-align: center;
+    font-size: 12px;
+    color: var(--accent-red);
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+  }
+  .card-selection-info {
+    text-align: center;
+    font-size: 14px;
+    color: var(--accent-orange);
+    margin-bottom: 16px;
+    font-weight: 700;
+  }
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .slash-card {
+    background: #e8e8e8;
+    border-radius: 14px;
+    padding: 24px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    border: 3px solid transparent;
+    position: relative;
+  }
+  .slash-card .card-icon {
+    font-size: 32px;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .slash-card .card-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #222;
+  }
+  .slash-card.selected {
+    border-color: var(--accent-orange);
+    box-shadow: 0 0 20px rgba(245,166,35,0.4);
+    background: #fff8e8;
+  }
+  .slash-card.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 8px; right: 12px;
+    font-size: 20px;
+    color: var(--accent-orange);
+    font-weight: 900;
+  }
+  .slash-card:active {
+    transform: scale(0.96);
+  }
+  .submit-btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--accent-orange), #e89b26);
+    border: none;
+    border-radius: 12px;
+    color: #000;
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    opacity: 0.3;
+    pointer-events: none;
+  }
+  .submit-btn.enabled {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .submit-btn.enabled:active {
+    transform: scale(0.97);
+  }
+
+  /* ===== Modal / Analysis Popup ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-content {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 28px 24px;
+    max-width: 440px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    color: #333;
+    position: relative;
+  }
+  .modal-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #222;
+  }
+  .modal-header .doc-icon {
+    font-size: 20px;
+  }
+  .modal-body {
+    font-size: 14px;
+    line-height: 2;
+    color: #444;
+  }
+  .modal-body .analysis-item {
+    margin-bottom: 12px;
+    padding: 10px 14px;
+    background: #fff;
+    border-radius: 8px;
+    border-left: 3px solid var(--accent-orange);
+  }
+  .modal-body .analysis-item .tag {
+    display: inline-block;
+    background: var(--accent-orange);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+  }
+  .modal-body .analysis-item .desc {
+    font-size: 13px;
+    color: #555;
+    line-height: 1.8;
+  }
+  .modal-score-change {
+    text-align: center;
+    margin: 16px 0;
+    padding: 12px;
+    background: #fff3e0;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent-red);
+  }
+  .modal-score-change.correct {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+  .modal-close-btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    margin-top: 16px;
+    background: linear-gradient(135deg, var(--accent-orange), #e89b26);
+    border: none;
+    border-radius: 10px;
+    color: #000;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 2px;
+  }
+  .modal-close-btn:active { transform: scale(0.97); }
+
+  /* ===== Result Page ===== */
+  .result-page {
+    padding-top: 40px;
+  }
+  .result-rank-panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    min-height: 140px;
+  }
+  .rank-name {
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--text-white);
+    letter-spacing: 6px;
+    text-align: center;
+    line-height: 1.6;
+  }
+  .rank-name .highlight {
+    color: #000;
+    background: var(--accent-gold);
+    padding: 2px 10px;
+    border-radius: 4px;
+    margin: 0 2px;
+  }
+  .result-score-panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .result-score-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .result-score-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+  .result-score-value {
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--accent-gold);
+  }
+  .replay-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .replay-btn .dot {
+    width: 8px; height: 8px;
+    background: var(--accent-orange);
+    border-radius: 50%;
+  }
+  .replay-btn:active { transform: scale(0.97); }
+  .result-eval-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px 20px;
+    margin-top: 16px;
+    color: #333;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .eval-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 16px;
+  }
+  .eval-text {
+    font-size: 14px;
+    line-height: 2;
+    color: #555;
+    margin-bottom: 16px;
+    font-style: italic;
+  }
+  .eval-warning {
+    background: var(--warning-bg);
+    border-left: 4px solid var(--warning-border);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.8;
+    color: #666;
+  }
+  .eval-warning-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    color: var(--warning-border);
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+
+  /* ===== Bottom Nav ===== */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg-panel);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    z-index: 50;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0 14px;
+    gap: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    font-size: 11px;
+  }
+  .nav-item .nav-icon { font-size: 20px; }
+  .nav-item.active {
+    color: var(--accent-orange);
+    background: rgba(245,166,35,0.1);
+  }
+
+  /* ===== Animations ===== */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 8px 32px rgba(220,38,38,0.4); }
+    50% { box-shadow: 0 8px 48px rgba(220,38,38,0.7); }
+  }
+  .fade-in { animation: fadeIn 0.5s ease forwards; }
+  .start-btn { animation: pulse 2s infinite; }
+
+  /* ===== Score Popup ===== */
+  .score-popup {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    font-weight: 900;
+    z-index: 90;
+    pointer-events: none;
+    animation: scorePopup 1.2s ease forwards;
+  }
+  .score-popup.minus { color: var(--accent-red); }
+  .score-popup.plus { color: var(--accent-teal); }
+  @keyframes scorePopup {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
+    30% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+    100% { opacity: 0; transform: translate(-50%, -80%) scale(1); }
+  }
+
+  /* ===== Alert Error - Red Alert + Shake ===== */
+  .alert-error {
+    animation: alertPulse 0.5s ease-in-out, alertShake 0.5s ease-in-out;
+    pointer-events: none;
+  }
+  @keyframes alertPulse {
+    0%, 100% { box-shadow: inset 0 0 0 0 rgba(192,0,0,0); }
+    20% { box-shadow: inset 0 0 80px 20px rgba(192,0,0,0.4); }
+    40% { box-shadow: inset 0 0 60px 15px rgba(192,0,0,0.2); }
+    60% { box-shadow: inset 0 0 80px 20px rgba(192,0,0,0.4); }
+    80% { box-shadow: inset 0 0 40px 10px rgba(192,0,0,0.2); }
+  }
+  @keyframes alertShake {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-3px, 2px); }
+    20% { transform: translate(3px, -2px); }
+    30% { transform: translate(-2px, 3px); }
+    40% { transform: translate(2px, -3px); }
+    50% { transform: translate(-3px, -2px); }
+    60% { transform: translate(3px, 2px); }
+    70% { transform: translate(-2px, -3px); }
+    80% { transform: translate(2px, 3px); }
+    90% { transform: translate(-1px, 1px); }
+  }
+  .alert-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 80;
+    pointer-events: none;
+    box-shadow: inset 0 0 0 0 rgba(192,0,0,0);
+  }
+  .alert-overlay.active {
+    animation: alertPulse 0.5s ease-in-out;
+  }
+
+  /* ===== Scrollbar ===== */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<canvas id="matrix-bg"></canvas>
+<div id="intro-matrix-bg"></div>
+
+<!-- ===== INTRO PAGE ===== -->
+<div id="page-intro" class="page intro-page active">
+  <div class="intro-title fade-in">惊雷行动</div>
+  <div class="intro-subtitle fade-in" style="animation-delay:0.2s">思维免疫防线</div>
+  <div class="start-btn-wrap fade-in" style="animation-delay:0.4s">
+    <button class="start-btn" onclick="startGame()">START</button>
+    <div class="start-label">启动过滤矩阵</div>
+    <div class="start-sub">READY FOR INIT</div>
+  </div>
+</div>
+
+<!-- ===== QUESTION PAGE ===== -->
+<div id="page-question" class="page">
+  <div class="game-header">
+    <div class="game-title">认知反击战</div>
+  </div>
+  <div class="status-bar">
+    <span class="status-label">免疫等级</span>
+    <div class="status-bar-track">
+      <div class="status-bar-fill" id="immunity-bar" style="width:100%"></div>
+    </div>
+    <span class="status-value" id="immunity-value">100%</span>
+  </div>
+  <div class="progress-indicator" id="progress-text">TARGET 01 // 10</div>
+  <div class="question-panel">
+    <div class="panel-label"><span class="panel-dot"></span> 题目</div>
+    <img class="question-image" id="q-image" src="" alt="">
+    <div class="question-text" id="q-text"></div>
+  </div>
+  <div class="decision-area">
+    <button class="decision-btn believe" onclick="makeDecision(true)">
+      <span class="indicator"></span>
+      <span>相信并纳入数据库</span>
+      <span class="btn-icon">💾</span>
+    </button>
+    <button class="decision-btn doubt" onclick="makeDecision(false)">
+      <span class="indicator"></span>
+      <span>不信，有待考察</span>
+      <span class="btn-icon">🔍</span>
+    </button>
+  </div>
+</div>
+
+<!-- ===== SLASH CARD PAGE ===== -->
+<div id="page-slash" class="page">
+  <div class="game-header">
+    <div class="game-title">认知反击战</div>
+  </div>
+  <div class="status-bar">
+    <span class="status-label">免疫等级</span>
+    <div class="status-bar-track">
+      <div class="status-bar-fill" id="immunity-bar2" style="width:100%"></div>
+    </div>
+    <span class="status-value" id="immunity-value2">100%</span>
+  </div>
+  <div class="progress-indicator" id="progress-text2">TARGET 01 // 10</div>
+  <div class="question-panel" style="margin-bottom:20px">
+    <div class="panel-label"><span class="panel-dot"></span> 题目</div>
+    <div class="question-text" id="slash-q-text" style="font-size:14px"></div>
+  </div>
+  <div class="slash-title">斩杀卡片</div>
+  <div class="slash-subtitle">TARGET IDENTIFIED // PROTOCOL 01: ELIMINATE</div>
+  <div class="card-selection-info" id="card-selection-info">请选择 0/3 张卡片</div>
+  <div class="card-grid" id="card-grid">
+    <div class="slash-card" data-card="情绪降温" onclick="toggleCard(this)">
+      <span class="card-icon">🧊</span>
+      <span class="card-name">情绪降温</span>
+    </div>
+    <div class="slash-card" data-card="核查发布源" onclick="toggleCard(this)">
+      <span class="card-icon">📡</span>
+      <span class="card-name">核查发布源</span>
+    </div>
+    <div class="slash-card" data-card="事实交叉验证" onclick="toggleCard(this)">
+      <span class="card-icon">⚖️</span>
+      <span class="card-name">交叉验证</span>
+    </div>
+    <div class="slash-card" data-card="科普常识" onclick="toggleCard(this)">
+      <span class="card-icon">🔬</span>
+      <span class="card-name">科普常识</span>
+    </div>
+  </div>
+  <button class="submit-btn" id="slash-submit-btn" onclick="submitSlashCards()">提交斩杀</button>
+</div>
+
+<!-- ===== RESULT PAGE ===== -->
+<div id="page-result" class="page result-page">
+  <div class="result-rank-panel" id="result-rank-panel"></div>
+  <div class="result-score-panel">
+    <div class="result-score-row">
+      <span class="result-score-label">免疫等级</span>
+      <span class="result-score-value" id="result-score">80%</span>
+    </div>
+    <button class="replay-btn" onclick="restartGame()">
+      <span class="dot"></span>
+      <span>再来一次</span>
+    </button>
+  </div>
+  <div class="result-eval-card" id="result-eval-card"></div>
+</div>
+
+<!-- ===== ALERT OVERLAY ===== -->
+<div class="alert-overlay" id="alert-overlay"></div>
+
+<!-- ===== ANALYSIS MODAL ===== -->
+<div class="modal-overlay" id="modal-analysis">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span class="doc-icon">📋</span>
+      <span>斩杀评价</span>
+    </div>
+    <div class="modal-body" id="modal-analysis-body"></div>
+    <button class="modal-close-btn" onclick="closeAnalysisModal()">继续</button>
+  </div>
+</div>
+
+<!-- ===== BOTTOM NAV ===== -->
+<div class="bottom-nav" id="bottom-nav" style="display:none">
+  <button class="nav-item" data-tab="dashboard"><span class="nav-icon">📊</span><span>仪表盘</span></button>
+  <button class="nav-item active" data-tab="intel"><span class="nav-icon">👁️</span><span>情报</span></button>
+  <button class="nav-item" data-tab="verify"><span class="nav-icon">📶</span><span>检验</span></button>
+  <button class="nav-item" data-tab="system"><span class="nav-icon">⚙️</span><span>系统</span></button>
+</div>
+
+<script>
+// ===== GAME DATA =====
+const questions = [
+  {
+    id: 1,
+    content: '双减政策持续优化落地，各地稳步规范校内课后补习与托管服务，【加粗红线 1：同时适度放宽素质类校外培训的监管限制】，贴合学生多元化兴趣发展需求。不少家长惊呼政策变松，【加粗红线 2：以后校外培训乱象会彻底失控，孩子学习差距越拉越大】。',
+    image: 'images/q1.png',
+    isFake: true,
+    correctCards: ['核查发布源', '事实交叉验证', '情绪降温'],
+    requiredCount: 3,
+    analysis: [
+      { tag: '核查发布源', desc: '盯着红线 1：溯源教育部及各地双减官方文件，并无 "放宽素质类培训监管" 的表述，属于自媒体篡改政策原文' },
+      { tag: '事实交叉验证', desc: '盯着红线 1：官方仅对公益普惠素质课程给予扶持，扶持不等于放松监管，概念被恶意偷换' },
+      { tag: '情绪降温', desc: '盯着红线 2：刻意放大焦虑，渲染 "培训失控、差距拉大" 的负面情绪，制造家长群体恐慌' }
+    ]
+  },
+  {
+    id: 2,
+    content: '【加粗红线 1：国家公共卫生宣教平台科普提示】，夏季长期处于密闭空调环境，人体温差适应能力下降，【加粗红线 2：体质敏感人群易出现血管舒张收缩紊乱】，日常需合理调控室内温度、避免密闭久坐。',
+    image: 'images/q2.png',
+    isFake: true,
+    correctCards: ['核查发布源', '事实交叉验证'],
+    requiredCount: 2,
+    analysis: [
+      { tag: '核查发布源', desc: '盯着红线 1：国内无 "国家公共卫生宣教平台" 这一官方机构，属于自媒体虚构权威发布主体' },
+      { tag: '事实交叉验证', desc: '盯着红线 2：查阅卫健委、疾控中心科普内容，空调不适主要源于空气不流通、湿度失衡，和血管舒张收缩紊乱无关联，因果强行嫁接' }
+    ]
+  },
+  {
+    id: 3,
+    content: '国民体质监测报告指出，成年人每日坚持固定 8000 步以上快走运动，长期坚持可持续提升心肺功能，【加粗红线 1：完全规避久坐带来的代谢损伤】，有效降低肥胖、高血脂等常见慢性病的发病概率。【加粗红线 2：不走够步数，身体迟早会出大问题】',
+    image: 'images/q3.png',
+    isFake: true,
+    correctCards: ['科普常识', '事实交叉验证', '情绪降温'],
+    requiredCount: 3,
+    analysis: [
+      { tag: '科普常识', desc: '盯着红线 1：基础运动常识表明，步行仅能辅助调理身体，无法彻底抵消久坐带来的各类健康问题，表述违背客观规律' },
+      { tag: '事实交叉验证', desc: '盯着红线 1：对照运动医学文献，久坐损伤包含腰背劳损、体态变形等，单纯步行无法全面修复' },
+      { tag: '情绪降温', desc: '盯着红线 2：用 "身体出大问题" 制造健康焦虑，强迫大众盲从单一运动标准' }
+    ]
+  },
+  {
+    id: 4,
+    content: '眼科青少年视力筛查报告显示，日常长时间佩戴防蓝光眼镜，能够有效阻隔屏幕有害光源，持续佩戴可缓解用眼疲劳，【加粗红线 1：降低近距离用眼导致的视力加深风险】。',
+    image: 'images/q4.png',
+    isFake: true,
+    correctCards: ['科普常识', '事实交叉验证'],
+    requiredCount: 2,
+    analysis: [
+      { tag: '科普常识', desc: '盯着红线 1：基础眼科常识可知，无度数普通防蓝光眼镜不具备预防近视的作用，过度佩戴反而会削弱眼部适应能力' },
+      { tag: '事实交叉验证', desc: '盯着红线 1：核对正规眼科筛查报告与临床结论，该类眼镜仅在特殊高能蓝光场景有微弱防护，无法防控近视加深' }
+    ]
+  },
+  {
+    id: 5,
+    content: '养生健康调研数据表明，人体经过一整晚睡眠会淤积大量毒素，【加粗红线 1：晨起空腹大口猛喝大量白开水，可以快速冲刷内脏、排出体内堆积毒素、疏通血管】，长期坚持可以大幅减少慢病发生。【加粗红线 2：早上不空腹喝水，毒素常年堆积，身体迟早出大病】。',
+    image: 'images/q5.png',
+    isFake: true,
+    correctCards: ['科普常识', '事实交叉验证', '情绪降温'],
+    requiredCount: 3,
+    analysis: [
+      { tag: '科普常识', desc: '盯着红线 1：人体肝脏、肾脏具备完整代谢排毒机制，不存在"晨起淤积毒素需要喝水冲刷"的生理逻辑，违背基础人体常识' },
+      { tag: '事实交叉验证', desc: '盯着红线 1：晨起只需适量小口补水即可，大口猛灌水反而会加重肠胃、肾脏负担，不存在排毒疏通血管功效' },
+      { tag: '情绪降温', desc: '盯着红线 2：将日常喝水习惯与"毒素堆积、生大病"强行绑定，制造全民养生焦虑，恐吓用户盲从伪养生方法' }
+    ]
+  },
+  {
+    id: 6,
+    content: '交管便民服务优化内容指出，非营运小型私家车年检流程持续简化，依托线上核验机制，可进一步降低车主线下办事成本，【加粗红线 1：放宽常规车辆年检核验标准】。',
+    image: 'images/q6.png',
+    isFake: true,
+    correctCards: ['核查发布源', '事实交叉验证'],
+    requiredCount: 2,
+    analysis: [
+      { tag: '核查发布源', desc: '全篇：该内容并非交管部门完整原文，是自媒体截取片段并篡改核心规则后二次传播' },
+      { tag: '事实交叉验证', desc: '盯着红线 1：比对全国机动车年检新规，仅简化办理流程，安全核验标准严格执行国标，从未放宽' }
+    ]
+  },
+  {
+    id: 7,
+    content: '国内膳食营养调研显示，青少年长期摄入含糖饮品，会逐步影响身体代谢状态，【加粗红线 1：干扰脂质代谢平衡】，间接提升体态肥胖与代谢异常的发生概率。【加粗红线 2：喝饮料就是在亲手毁掉孩子身体，一定要全面禁止】。',
+    image: 'images/q7.png',
+    isFake: true,
+    correctCards: ['科普常识', '事实交叉验证', '情绪降温'],
+    requiredCount: 3,
+    analysis: [
+      { tag: '科普常识', desc: '盯着红线 1：基础营养学常识，含糖饮品主要影响糖分代谢与胰岛素稳态，不会直接干扰脂质代谢，生理概念被篡改' },
+      { tag: '事实交叉验证', desc: '盯着红线 1：肥胖是热量、饮食、运动共同作用的结果，不能单一归咎于含糖饮品' },
+      { tag: '情绪降温', desc: '盯着红线 2：用 "毁掉身体" 制造恐慌，引导一刀切的极端禁止行为，放大亲子饮食焦虑' }
+    ]
+  },
+  {
+    id: 8,
+    content: '【加粗红线 1：实拍：国内城市近郊湿地公园日常巡护记录，观测到野生白化赤狐活动种群】，该物种属于国家二级保护动物，当地林业部门已介入常态化监测，开展栖息地生态保护工作。',
+    image: 'images/q8.png',
+    isFake: true,
+    correctCards: ['核查发布源', '事实交叉验证'],
+    requiredCount: 2,
+    analysis: [
+      { tag: '核查发布源', desc: '盯着红线 1：溯源图片与视频素材，所谓 "实拍画面" 为 AI 合成作品，并非现场真实拍摄内容' },
+      { tag: '事实交叉验证', desc: '盯着红线 1：查询各地林业部门、湿地公园公开台账，国内近郊湿地无稳定的野生白化赤狐种群，属于异地案例强行嫁接' }
+    ]
+  },
+  {
+    id: 9,
+    content: '食品卫生学权威研究表明，0-4℃低温冷藏、24 小时内存放的熟食，经过彻底高温加热后，微生物污染风险可降至安全标准范围内，【加粗红线 1：合规保存的隔夜熟食无需完全禁忌】',
+    image: 'images/q9.png',
+    isFake: false,
+    correctCards: [],
+    requiredCount: 0,
+    analysis: [
+      { tag: '事实交叉验证', desc: '大众普遍被 "隔夜菜有毒、致癌" 的谣言误导。对照食品安全国家标准与食品卫生学研究，合规冷藏 + 充分加热的隔夜熟食可正常食用，极端忌口说法属于不实传言。本条为权威真实结论。' }
+    ]
+  },
+  {
+    id: 10,
+    content: '家电能效工程实测数据证实，家用变频空调短时外出（10-20 分钟）无需关机，频繁启停产生的瞬时峰值能耗与设备损耗，【加粗红线 1：总体大于空调短时待机能耗，短时关机重启反而更费电、更耗设备】。',
+    image: 'images/q10.png',
+    isFake: false,
+    correctCards: [],
+    requiredCount: 0,
+    analysis: [
+      { tag: '事实交叉验证', desc: '大众固有认知 "空调开机最费电" 存在偏差。查阅家电能效实验室实测报告，变频空调启停峰值能耗持续时间极短，短时待机累计能耗更高，推翻传统错误认知。本条为行业实测真实结果。' }
+    ]
+  }
+];
+
+const endings = [
+  {
+    rank: '破晓级·真理捍卫者',
+    minScore: 90, maxScore: 100,
+    evaluation: '你的大脑是一座坚不可摧的数字堡垒。情绪泡沫、伪造数据和高仿权威在你面前无处遁形。你拥有极高的数字媒介素养，是网络黑夜里清醒的守望者。',
+    suggestion: '独擅其身还不够。当你在现实的朋友圈、家族群看到亲友转发谣言时，请不要冷眼旁观。试着用你掌握的"交叉验证"和"核查源头"的方法，温柔地拉他们一把，你就是现实中的辟谣利剑。'
+  },
+  {
+    rank: '惊雷级·理性侦察兵',
+    minScore: 60, maxScore: 89,
+    evaluation: '面对常规的养生和震惊体谣言，你能够保持清醒；但在面对精心缝合了"真事实+假结论"的高级伪装者（如局部真理、伪造权威图表）时，你还是会产生短暂的动摇和误判。',
+    suggestion: '记住，高级的谎言往往带着 90% 的真相。下次再看到让你感到极度愤怒、焦虑或过于震惊的"官方绝密报告"时，先让「情绪降温」3秒钟。不看标题看漏洞，多去官方发布渠道检索全文，补齐那缺失的 10% 真相。'
+  },
+  {
+    rank: '见习级·吃瓜重症患者',
+    minScore: 30, maxScore: 59,
+    evaluation: '危险！你正游走在被网络垃圾信息洗脑的边缘。你极易被网页的"震惊"、"不转不是..."等情绪字眼牵着鼻子走，常常在不经意间成为了营销号收割流量的工具（甚至可能在家族群默默转发过伪科学）。',
+    suggestion: '变冲浪习惯迫在眉睫！请即刻卸载那些频繁给你推送"擦边、标题党、阴谋论"的低质信息流平台。每天抽 10 分钟阅读权威正规媒体的新闻，训练自己的「常识科普」基础逻辑。看到任何新闻，先问三个字："谁说的？"。'
+  },
+  {
+    rank: '沦陷级·谣言传播骨干',
+    minScore: 0, maxScore: 29,
+    evaluation: '系统已崩溃。你已经完全丧失了数字免疫力，沦为了虚假信息的提线木偶。此时此刻，你可能正准备在朋友圈转发一条"多吃洋葱能杀死床头病毒"的伪科学。',
+    suggestion: '立刻断网！闭关冥想！你的思维系统需要一次彻底的"格式化"。建议从最基础的科学常识看起，保持对一切"小道消息"的绝对警惕。在学会点击"转发"按钮之前，请先学会使用搜索引擎去核查发布源。'
+  }
+];
+
+// ===== GAME STATE =====
+let currentQuestion = 0;
+let immunity = 100;
+let selectedCards = [];
+
+// Preload all images immediately on page load
+questions.forEach(q => { const img = new Image(); img.src = q.image; });
+
+// ===== INTRO MATRIX TEXT BACKGROUND =====
+(function initIntroMatrix() {
+  const container = document.getElementById('intro-matrix-bg');
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const rowCount = Math.ceil(window.innerHeight / 28) + 5;
+  const colCount = 18;
+  let totalDelay = 0;
+  for (let r = 0; r < rowCount; r++) {
+    const row = document.createElement('div');
+    row.className = 'matrix-row';
+    for (let c = 0; c < colCount; c++) {
+      const span = document.createElement('span');
+      span.textContent = chars[Math.floor(Math.random() * chars.length)];
+      span.style.animationDelay = (totalDelay * 0.015) + 's';
+      totalDelay++;
+      row.appendChild(span);
+    }
+    container.appendChild(row);
+  }
+})();
+
+// ===== MATRIX RAIN BACKGROUND =====
+(function initMatrix() {
+  const canvas = document.getElementById('matrix-bg');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const chars = 'CRITICALERRORVERIFYSOURCESATTACKGHOSTLEVELTHUNDERDEFENSEIMMUNESCANDETECTFILTERMATRIXPROTOCOL';
+  const fontSize = 14;
+  const cols = Math.floor(canvas.width / fontSize);
+  const drops = Array(cols).fill(1);
+  function draw() {
+    ctx.fillStyle = 'rgba(10,10,10,0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#8B3A3A';
+    ctx.font = fontSize + 'px monospace';
+    for (let i = 0; i < drops.length; i++) {
+      const text = chars[Math.floor(Math.random() * chars.length)];
+      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    }
+  }
+  setInterval(draw, 50);
+  window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+})();
+
+// ===== UTILITY FUNCTIONS =====
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  const nav = document.getElementById('bottom-nav');
+  nav.style.display = (pageId === 'page-intro' || pageId === 'page-result') ? 'none' : 'flex';
+}
+
+function updateImmunity() {
+  const pct = Math.max(0, immunity);
+  document.getElementById('immunity-bar').style.width = pct + '%';
+  document.getElementById('immunity-value').textContent = pct + '%';
+  document.getElementById('immunity-bar2').style.width = pct + '%';
+  document.getElementById('immunity-value2').textContent = pct + '%';
+}
+
+function showScorePopup(change) {
+  const el = document.createElement('div');
+  el.className = 'score-popup ' + (change < 0 ? 'minus' : 'plus');
+  el.textContent = (change < 0 ? '-' : '+') + Math.abs(change);
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1300);
+}
+
+function parseRedlines(text) {
+  return text.replace(/【加粗红线\s*\d+：/g, '<span class="redline">').replace(/】/g, '</span>');
+}
+
+function updateProgress() {
+  const num = String(currentQuestion + 1).padStart(2, '0');
+  const txt = `TARGET ${num} // 10`;
+  document.getElementById('progress-text').textContent = txt;
+  document.getElementById('progress-text2').textContent = txt;
+}
+
+// ===== GAME FLOW =====
+function preloadImages() {
+  questions.forEach(q => {
+    const img = new Image();
+    img.src = q.image;
+  });
+}
+
+function startGame() {
+  currentQuestion = 0;
+  immunity = 100;
+  updateImmunity();
+  preloadImages();
+  loadQuestion();
+  showPage('page-question');
+}
+
+function restartGame() {
+  showPage('page-intro');
+}
+
+function loadQuestion() {
+  const q = questions[currentQuestion];
+  const img = document.getElementById('q-image');
+  img.removeAttribute('src');
+  img.src = q.image;
+  document.getElementById('q-text').innerHTML = parseRedlines(q.content);
+  updateProgress();
+}
+
+async function triggerPenaltyEffect(deduction, analysisHtml) {
+  // Lock UI
+  document.body.style.pointerEvents = 'none';
+
+  // Vibration
+  if (navigator.vibrate) {
+    navigator.vibrate([200, 100, 200]);
+  }
+
+  // Red alert + shake
+  const alertOverlay = document.getElementById('alert-overlay');
+  alertOverlay.classList.add('active');
+  document.body.classList.add('alert-error');
+
+  // Wait for animation
+  await new Promise(r => setTimeout(r, 500));
+
+  // Remove alert effects
+  alertOverlay.classList.remove('active');
+  document.body.classList.remove('alert-error');
+
+  // Show score popup and update immunity
+  immunity = Math.max(0, immunity - deduction);
+  updateImmunity();
+  showScorePopup(-deduction);
+
+  // Show modal
+  showModal(analysisHtml);
+
+  // Unlock UI
+  document.body.style.pointerEvents = '';
+}
+
+function makeDecision(believe) {
+  const q = questions[currentQuestion];
+  let deduction = 0;
+  let analysisHtml = '';
+
+  if (q.isFake) {
+    if (believe) {
+      deduction = 10;
+      analysisHtml = buildAnalysisModal(deduction, q.analysis);
+      triggerPenaltyEffect(deduction, analysisHtml);
+    } else {
+      loadSlashPage();
+      return;
+    }
+  } else {
+    if (!believe) {
+      deduction = 10;
+      analysisHtml = buildAnalysisModal(deduction, q.analysis);
+      triggerPenaltyEffect(deduction, analysisHtml);
+    } else {
+      nextQuestion();
+      return;
+    }
+  }
+}
+
+function buildAnalysisModal(deduction, analysisItems) {
+  let html = '';
+  if (deduction > 0) {
+    html += `<div class="modal-score-change">免疫等级 -${deduction}</div>`;
+  } else {
+    html += `<div class="modal-score-change correct">判断正确！</div>`;
+  }
+  analysisItems.forEach(item => {
+    html += `<div class="analysis-item">
+      <span class="tag">${item.tag}</span>
+      <div class="desc">${item.desc}</div>
+    </div>`;
+  });
+  return html;
+}
+
+function showModal(html) {
+  document.getElementById('modal-analysis-body').innerHTML = html;
+  document.getElementById('modal-analysis').classList.add('active');
+}
+
+function closeAnalysisModal() {
+  document.getElementById('modal-analysis').classList.remove('active');
+  nextQuestion();
+}
+
+function nextQuestion() {
+  currentQuestion++;
+  if (currentQuestion >= questions.length) {
+    showResult();
+  } else {
+    loadQuestion();
+    showPage('page-question');
+  }
+}
+
+// ===== SLASH CARD PAGE =====
+function loadSlashPage() {
+  const q = questions[currentQuestion];
+  selectedCards = [];
+  document.getElementById('slash-q-text').innerHTML = parseRedlines(q.content);
+  document.getElementById('card-selection-info').textContent = `请选择 0/${q.requiredCount} 张卡片`;
+  document.querySelectorAll('.slash-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('slash-submit-btn').classList.remove('enabled');
+  showPage('page-slash');
+}
+
+function toggleCard(el) {
+  const q = questions[currentQuestion];
+  const cardName = el.dataset.card;
+  if (el.classList.contains('selected')) {
+    el.classList.remove('selected');
+    selectedCards = selectedCards.filter(c => c !== cardName);
+  } else {
+    if (selectedCards.length >= q.requiredCount) return;
+    el.classList.add('selected');
+    selectedCards.push(cardName);
+  }
+  document.getElementById('card-selection-info').textContent = `请选择 ${selectedCards.length}/${q.requiredCount} 张卡片`;
+  const btn = document.getElementById('slash-submit-btn');
+  if (selectedCards.length === q.requiredCount) {
+    btn.classList.add('enabled');
+  } else {
+    btn.classList.remove('enabled');
+  }
+}
+
+async function submitSlashCards() {
+  const q = questions[currentQuestion];
+  if (selectedCards.length !== q.requiredCount) return;
+
+  let wrongCount = 0;
+  selectedCards.forEach(card => {
+    if (!q.correctCards.includes(card)) wrongCount++;
+  });
+
+  let deduction = 0;
+  if (wrongCount === 0) {
+    deduction = 0;
+  } else if (wrongCount === 1) {
+    deduction = 5;
+  } else {
+    deduction = 10;
+  }
+
+  const analysisHtml = buildAnalysisModal(deduction, q.analysis);
+
+  if (deduction > 0) {
+    // Lock UI
+    document.body.style.pointerEvents = 'none';
+
+    // Vibration
+    if (navigator.vibrate) {
+      navigator.vibrate([200, 100, 200]);
+    }
+
+    // Red alert + shake
+    const alertOverlay = document.getElementById('alert-overlay');
+    alertOverlay.classList.add('active');
+    document.body.classList.add('alert-error');
+
+    // Wait for animation
+    await new Promise(r => setTimeout(r, 500));
+
+    // Remove alert effects
+    alertOverlay.classList.remove('active');
+    document.body.classList.remove('alert-error');
+
+    // Update and show popup
+    immunity = Math.max(0, immunity - deduction);
+    updateImmunity();
+    showScorePopup(-deduction);
+    showModal(analysisHtml);
+
+    // Unlock UI
+    document.body.style.pointerEvents = '';
+  } else {
+    showModal(analysisHtml);
+  }
+}
+
+// ===== RESULT PAGE =====
+function showResult() {
+  const score = immunity;
+  let ending = endings[endings.length - 1]; // default to lowest
+  for (let e of endings) {
+    if (score >= e.minScore && score <= e.maxScore) {
+      ending = e;
+      break;
+    }
+  }
+
+  document.getElementById('result-score').textContent = score + '%';
+
+  // Rank name: extract "XX级" part and highlight it
+  const rank = ending.rank;
+  const jiIndex = rank.indexOf('级');
+  let rankHtml = '';
+  if (jiIndex !== -1) {
+    const prefix = rank.substring(0, jiIndex - 2); // e.g. "见习"
+    const highlight = rank.substring(jiIndex - 2, jiIndex + 1); // e.g. "见习级"
+    const suffix = rank.substring(jiIndex + 1); // e.g. "·吃瓜重症患者"
+    const cleanSuffix = suffix.replace(/·/g, ''); // remove dots
+    rankHtml = `<div class="rank-name">${prefix}<span class="highlight">${highlight}</span>${cleanSuffix}</div>`;
+  } else {
+    rankHtml = `<div class="rank-name">${rank.replace(/·/g, '')}</div>`;
+  }
+  document.getElementById('result-rank-panel').innerHTML = rankHtml;
+
+  // Eval card
+  document.getElementById('result-eval-card').innerHTML = `
+    <div class="eval-header"><span>📋</span> 斩杀评价</div>
+    <div class="eval-text">"${ending.evaluation}"</div>
+    <div class="eval-warning">
+      <div class="eval-warning-title">⚠️ 温馨建议</div>
+      <div>${ending.suggestion}</div>
+    </div>
+  `;
+
+  showPage('page-result');
+}
+</script>
+</body>
+</html>
